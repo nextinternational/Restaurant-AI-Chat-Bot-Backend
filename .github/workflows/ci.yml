@@ -33,7 +33,7 @@ jobs:
       - run: npm run build
       - run: npm run audit:prod
       - name: Secret scan
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Required for repositories owned by a GitHub organisation (free for personal accounts).
