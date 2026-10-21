@@ -1,0 +1,50 @@
+{
+  "name": "Big Banana",
+  "slug": "big-banana",
+  "timezone": "America/Antigua",
+  "currency": "XCD",
+  "locale": "en",
+  "owner": { "name": "Jeff Hadded", "email": "giselle.georges@nextintl.com" },
+  "origins": ["https://example.com"],
+  "settings": {
+    "address": "1 Example Street, St. John's",
+    "phone": "+1 268 555 0100",
+    "mapUrl": "https://maps.google.com/?q=example",
+    "notes": "Free parking behind the restaurant",
+    "monthlyAiBudgetUsd": 10
+  },
+  "hours": {
+    "monday": [{ "opens": "10:00", "closes": "22:00" }],
+    "tuesday": [{ "opens": "10:00", "closes": "22:00" }],
+    "wednesday": [{ "opens": "10:00", "closes": "22:00" }],
+    "thursday": [{ "opens": "10:00", "closes": "22:00" }],
+    "friday": [{ "opens": "10:00", "closes": "23:00" }],
+    "saturday": [{ "opens": "12:00", "closes": "23:00" }],
+    "sunday": []
+  },
+  "holidays": [
+    { "date": "2026-12-25", "closed": true, "note": "Christmas Day" }
+  ],
+  "policies": {
+    "pets": { "title": "Pets policy", "body": "Small dogs are welcome on the terrace only." },
+    "payment": { "title": "Payment", "body": "We accept cash and major credit cards." }
+  },
+  "faqs": [
+    {
+      "question": "Do you have free WiFi?",
+      "answer": "Yes, ask your server for the password.",
+      "keywords": ["internet", "wi-fi"]
+    }
+  ],
+  "menu": [
+    {
+      "name": "Banana Pancakes",
+      "description": "Fluffy pancakes with fresh banana.",
+      "category": "Breakfast",
+      "price": 18.5,
+      "dietaryTags": ["vegetarian"],
+      "allergens": ["cereals_gluten", "milk", "eggs"]
+    }
+  ],
+  "publish": false
+}

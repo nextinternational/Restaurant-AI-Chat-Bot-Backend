@@ -1,0 +1,25 @@
+# Production on a single VPS. Only Caddy is exposed (80/443); the API is reachable only through it.
+services:
+  api:
+    build: { context: .., dockerfile: Dockerfile }
+    restart: unless-stopped
+    env_file: .env.production
+    expose: ["3000"]
+    # The API needs no extra privileges: drop every Linux capability and forbid gaining new ones.
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    logging: { driver: json-file, options: { max-size: "10m", max-file: "5" } }
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on: [api]
+    ports: ["80:80", "443:443"]
+    environment:
+      API_DOMAIN: ${API_DOMAIN:?set API_DOMAIN in deploy/.env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+volumes:
+  caddy-data:
+  caddy-config:

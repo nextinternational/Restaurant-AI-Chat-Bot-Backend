@@ -1,0 +1,66 @@
+name: Deploy
+on:
+  workflow_dispatch:          # manual: run it from the Actions tab after CI is green
+permissions:
+  id-token: write             # OIDC to AWS, no long-lived keys in GitHub
+  contents: read
+concurrency: { group: deploy-prod, cancel-in-progress: false }
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  NAME: restaurant-ai-prod
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production   # add required reviewers on this environment for an approval gate
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci && npm run verify && npm run audit:prod
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push image (tag = commit SHA, immutable)
+        run: |
+          IMAGE="${{ steps.ecr.outputs.registry }}/${NAME}:${GITHUB_SHA}"
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+
+      - name: Register new task definitions with this image
+        run: |
+          for fam in "$NAME" "$NAME-migrate"; do
+            aws ecs describe-task-definition --task-definition "$fam" --query taskDefinition > td.json
+            jq --arg img "$IMAGE" '
+              .containerDefinitions[0].image = $img
+              | del(.taskDefinitionArn,.revision,.status,.requiresAttributes,.compatibilities,.registeredAt,.registeredBy)' td.json > new.json
+            aws ecs register-task-definition --cli-input-json file://new.json >/dev/null
+          done
+      - name: Run database migration (must succeed before the service is touched)
+        run: |
+          MIGRATE_ARN=$(aws ecs describe-task-definition --task-definition "${NAME}-migrate" --query taskDefinition.taskDefinitionArn --output text)
+          SUBNETS=${{ vars.PRIVATE_SUBNET_IDS }}
+          SG=${{ vars.TASK_SECURITY_GROUP_ID }}
+          TASK=$(aws ecs run-task --cluster "$NAME" --launch-type FARGATE --task-definition "$MIGRATE_ARN" \
+            --network-configuration "awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$SG],assignPublicIp=DISABLED}" \
+            --query 'tasks[0].taskArn' --output text)
+          aws ecs wait tasks-stopped --cluster "$NAME" --tasks "$TASK"
+          CODE=$(aws ecs describe-tasks --cluster "$NAME" --tasks "$TASK" --query 'tasks[0].containers[0].exitCode' --output text)
+          [ "$CODE" = "0" ] || { echo "migration failed (exit $CODE)"; exit 1; }
+
+      - name: Roll out (circuit breaker auto-rolls back on failure)
+        run: |
+          API_ARN=$(aws ecs describe-task-definition --task-definition "$NAME" --query taskDefinition.taskDefinitionArn --output text)
+          aws ecs update-service --cluster "$NAME" --service api --task-definition "$API_ARN" >/dev/null
+          aws ecs wait services-stable --cluster "$NAME" --services api
+
+      - name: Smoke test
+        run: |
+          curl -fsS "https://${{ vars.API_DOMAIN }}/health/ready"
+          curl -fsSI "https://${{ vars.API_DOMAIN }}/widget/chat-widget.js" | grep -i 'content-type: application/javascript'

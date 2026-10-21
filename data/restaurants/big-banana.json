@@ -1,0 +1,30 @@
+{
+  "name": "Big Banana",
+  "slug": "big-banana",
+  "timezone": "America/Antigua",
+  "currency": "XCD",
+  "locale": "en",
+  "owner": { "name": "Jeff Hadded", "email": "giselle.georges@nextintl.com" },
+  "origins": [],
+  "settings": {
+    "address": "",
+    "phone": "",
+    "mapUrl": "",
+    "notes": "",
+    "monthlyAiBudgetUsd": 0
+  },
+  "hours": {
+    "monday": [],
+    "tuesday": [],
+    "wednesday": [],
+    "thursday": [],
+    "friday": [],
+    "saturday": [],
+    "sunday": []
+  },
+  "holidays": [],
+  "policies": {},
+  "faqs": [],
+  "menu": [],
+  "publish": false
+}

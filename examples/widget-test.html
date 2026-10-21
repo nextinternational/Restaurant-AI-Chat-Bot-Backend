@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chat widget test page</title>
+</head>
+<body style="font-family:system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 16px">
+  <h1>Harbor Grill (demo page)</h1>
+  <p>Open the chat bubble at the bottom right. This page must be served from <code>http://localhost:8080</code>
+     (the origin <code>npm run db:seed</code> allows for the demo restaurant).</p>
+  <ol>
+    <li>Start MongoDB, <code>npm run db:migrate && npm run db:seed</code>, and copy the printed <b>rest_001 widget key</b>.</li>
+    <li>Start the API with <code>OPENAI_API_KEY</code> set: <code>npm run dev</code>.</li>
+    <li>Replace <code>PASTE_WIDGET_KEY_HERE</code> below, then run <code>python3 -m http.server 8080</code> in the repository root and open
+        <code>http://localhost:8080/examples/widget-test.html</code>.</li>
+  </ol>
+  <p>Things to try: "How much is the grilled salmon?", "Are you open tomorrow?", "Is the salmon safe for a peanut allergy?" (must give the restaurant's phone number),
+     "Can I talk to a person?" or "What's your phone number?" (must give the restaurant's phone number).</p>
+
+  <script src="../widget/chat-widget.js" data-api="http://localhost:3000" data-key="PASTE_WIDGET_KEY_HERE" data-title="Harbor Grill" defer></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+# Local development only. Production uses MongoDB Atlas + AWS ECS Fargate.
+services:
+  mongo:
+    image: mongo:8
+    ports: ["127.0.0.1:27017:27017"]
+    volumes: [mongo-data:/data/db]
+  api:
+    build: .
+    depends_on: [mongo]
+    ports: ["127.0.0.1:3000:3000"]
+    environment:
+      NODE_ENV: development
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DB_NAME: restaurant_ai
+      # Chat API is mounted only when a key is provided: OPENAI_API_KEY=sk-... docker compose up --build
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+volumes:
+  mongo-data:
