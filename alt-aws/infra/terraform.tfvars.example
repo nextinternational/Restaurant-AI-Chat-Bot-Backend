@@ -1,0 +1,4 @@
+domain_name = "api.yourdomain.com"
+alarm_email = "you@yourdomain.com"
+region      = "us-east-1"
+image_tag   = "bootstrap"   # any tag you pushed to ECR before phase 2
